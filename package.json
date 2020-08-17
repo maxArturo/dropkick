@@ -4,8 +4,17 @@
   "description": "simple news aggregator",
   "main": "index.js",
   "dependencies": {
+    "@types/luxon": "^1.24.3",
+    "axios": "^0.19.2",
     "fastify": "^3.2.0",
+    "fastify-compress": "^3.3.0",
     "fluture": "^12.3.1",
+    "fp-ts": "^2.8.1",
+    "handlebars": "^4.7.6",
+    "io-ts": "^2.2.9",
+    "luxon": "^1.24.1",
+    "module-alias": "^2.2.2",
+    "point-of-view": "^4.3.0",
     "tsc": "^1.20150623.0",
     "typescript": "^3.9.7"
   },
@@ -15,9 +24,11 @@
     "@typescript-eslint/parser": "^3.9.0",
     "eslint": "^7.7.0",
     "eslint-plugin-import": "^2.22.0",
-    "eslint-plugin-tsdoc": "^0.2.6"
+    "eslint-plugin-tsdoc": "^0.2.6",
+    "prettier": "^2.0.5"
   },
   "scripts": {
+    "start": "npm run tsc && node --require ./hooks.js dist/main.js",
     "test": "test",
     "tsc": "tsc -b",
     "format": "prettier --write '**/*.ts'",
