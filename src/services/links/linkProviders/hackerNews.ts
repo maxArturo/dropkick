@@ -1,9 +1,11 @@
-import { chain, map } from 'fluture';
+import { chain, FutureInstance, map } from 'fluture';
 import { DateTime } from 'luxon';
 import { http } from '@app/adapters/http';
 import * as t from 'io-ts';
 import { pipe } from 'fp-ts/function';
 import { validateHttpResponse } from '@app/util/validators';
+import { AppErrorType } from '@app/errors';
+import { Link } from '@app/domain';
 
 const HACKER_NEWS_URL = 'https://hn.algolia.com/api/v1/search?tags=front_page';
 
@@ -19,7 +21,7 @@ const hackerNewsResponse = t.type({
 });
 type HackerNewsResponse = t.TypeOf<typeof hackerNewsResponse>;
 
-const fetchLinks = () =>
+const fetchLinks = (): FutureInstance<AppErrorType, Array<Link>> =>
   pipe(
     http({ url: HACKER_NEWS_URL, method: 'get' }),
     chain(validateHttpResponse(HACKER_NEWS_URL)(hackerNewsResponse)),
