@@ -1,7 +1,7 @@
 import { Link } from '@app/domain';
 import { AppErrorType } from '@app/errors';
 import { FutureInstance, map, parallel } from 'fluture';
-import { hackerNews } from '@app/services/linkProviders';
+import { hackerNews } from '@app/services/links/linkProviders';
 import { pipe } from 'fp-ts/function';
 
 type linkProvider = {
