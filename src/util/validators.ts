@@ -8,6 +8,38 @@ type Validator = <A>(
   codec: t.Decoder<unknown, A>
 ) => (value: unknown) => FutureInstance<ValidationErrorType, A>;
 
+export const validateHttpResponse: (url: string) => Validator = (url) => (codec) =>
+  createValidator(codec, (errors) => ({
+    type: ErrorType.validation,
+    message: 'Invalid response from upstream HTTP response',
+    metadata: {
+      url,
+      errors: formatValidationErrors(errors),
+    },
+    errorCode: 502,
+  }));
+
+export function validateConfig<A>(codec: t.Decoder<unknown, A>, value: unknown): A {
+  return pipe(
+    value,
+    codec.decode,
+    fold(
+      (errors) => {
+        const configEntries = errors
+          .map(({ context }) =>
+            context.map(({ key, actual }) => (key ? `${key}:${actual}` : '')).join('')
+          )
+          .join('\n');
+
+        throw new Error(
+          `Invalid config for:\n(${codec.name}).\nThe following key/value pairs are invalid:\n${configEntries}\n`
+        );
+      },
+      (result) => result
+    )
+  );
+}
+
 function createValidator<A>(
   codec: t.Decoder<unknown, A>,
   mapError: (errors: t.Errors) => ValidationErrorType
@@ -20,17 +52,6 @@ function createValidator<A>(
     );
   };
 }
-
-export const validateHttpResponse: (url: string) => Validator = (url) => (codec) =>
-  createValidator(codec, (errors) => ({
-    type: ErrorType.validation,
-    message: 'Invalid response from upstream HTTP response',
-    metadata: {
-      url,
-      errors: formatValidationErrors(errors),
-    },
-    errorCode: 502,
-  }));
 
 function formatValidationErrors(errors: t.Errors): Array<string> {
   return errors.map(

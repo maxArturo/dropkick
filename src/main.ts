@@ -4,6 +4,7 @@ import templateMiddleware from 'point-of-view';
 import handlebars from 'handlebars';
 
 import { applyRoutes } from './routes';
+import { linksService } from '@app/services';
 
 const app = fastify({ logger: true });
 
@@ -16,4 +17,6 @@ app.listen(3000, (err) => {
   if (err) {
     throw err;
   }
+
+  linksService.scheduleLinkExtraction();
 });
