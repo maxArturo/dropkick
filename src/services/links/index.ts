@@ -1,1 +1,1 @@
-export { fetchLinks } from './links';
+export * from './links';
