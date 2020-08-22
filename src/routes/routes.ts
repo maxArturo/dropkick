@@ -1,6 +1,6 @@
 import { Route, RouteType } from './types';
 import { FutureInstance, map, reject, resolve } from 'fluture';
-import { AppErrorType, ErrorType } from '@app/errors';
+import { AppError, ErrorType } from '@app/errors';
 import { FastifyReply } from 'fastify';
 import { apis } from '@app/apis';
 import { pipe } from 'fp-ts/function';
@@ -12,7 +12,7 @@ export const routes: Array<Route<unknown>> = [
     routeType: RouteType.view,
     method: 'GET',
     url: '/',
-    handler: ({ res }: { res: FastifyReply }): FutureInstance<AppErrorType, FastifyReply> => {
+    handler: ({ res }: { res: FastifyReply }): FutureInstance<AppError, FastifyReply> => {
       return pipe(
         apis.currentLinks(),
         map<Array<Link>, FastifyReply>((links) => {
@@ -26,7 +26,7 @@ export const routes: Array<Route<unknown>> = [
     routeType: RouteType.payload,
     method: 'GET',
     url: '/whops',
-    handler: (): FutureInstance<AppErrorType, { message: string }> =>
+    handler: (): FutureInstance<AppError, { message: string }> =>
       Math.trunc(Math.random() * 10) % 2 === 0
         ? resolve({ message: 'success' })
         : reject({

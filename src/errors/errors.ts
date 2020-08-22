@@ -1,45 +1,41 @@
-import * as t from 'io-ts';
-
 export enum ErrorType {
-  default = 'Error.Default',
-  http = 'Error.Http',
-  validation = 'Error.Validation',
+  default = 'default',
+  http = 'http',
+  validation = 'validation',
+  db = 'db',
 }
 
-const errorDetails = t.intersection([
-  t.type({
-    message: t.string,
-    metadata: t.UnknownRecord,
-    errorCode: t.number,
-  }),
-  t.partial({
-    stack: t.string,
-  }),
-]);
+interface errorDetails {
+  message: string;
+  metadata: Record<string, unknown>;
+  errorCode: number;
+  stack?: string;
+}
 
-export const defaultError = t.intersection([
-  t.type({
-    type: t.literal(ErrorType.default),
-  }),
-  errorDetails,
-]);
-export type DefaultErrorType = t.TypeOf<typeof defaultError>;
+export interface DefaultError extends errorDetails {
+  type: ErrorType.default;
+}
 
-export const httpError = t.intersection([
-  t.type({
-    type: t.literal(ErrorType.http),
-  }),
-  errorDetails,
-]);
-export type HttpErrorType = t.TypeOf<typeof httpError>;
+export interface HttpError extends errorDetails {
+  type: ErrorType.http;
+}
 
-export const validationError = t.intersection([
-  t.type({
-    type: t.literal(ErrorType.validation),
-  }),
-  errorDetails,
-]);
-export type ValidationErrorType = t.TypeOf<typeof validationError>;
+export interface ValidationError extends errorDetails {
+  type: ErrorType.validation;
+}
 
-export const appError = t.union([defaultError, httpError, validationError]);
-export type AppErrorType = t.TypeOf<typeof appError>;
+export interface DbError extends errorDetails {
+  type: ErrorType.db;
+}
+
+export interface AppError extends errorDetails {
+  type: string;
+}
+
+export const fromNodeError: (type: ErrorType) => (e: any) => AppError = (type) => (e: any) => ({
+  message: e.message ?? 'unknown error occurred',
+  errorCode: 500,
+  type,
+  stack: e.stack,
+  metadata: { ...e },
+});

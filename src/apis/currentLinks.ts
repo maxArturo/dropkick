@@ -1,8 +1,7 @@
-import { FutureInstance } from 'fluture';
-import { AppErrorType } from '@app/errors';
+import { FutureInstance, resolve } from 'fluture';
+import { AppError } from '@app/errors';
 import { Link } from '@app/domain';
-import { linksService } from '@app/services';
 
-export function currentLinks(): FutureInstance<AppErrorType, Array<Link>> {
-  return linksService.fetchLinks();
+export function currentLinks(): FutureInstance<AppError, Array<Link>> {
+  return resolve([]);
 }

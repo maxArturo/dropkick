@@ -1,12 +1,12 @@
 import * as t from 'io-ts';
 import { FutureInstance, reject, resolve } from 'fluture';
-import { ErrorType, ValidationErrorType } from '@app/errors';
+import { ErrorType, ValidationError } from '@app/errors';
 import { pipe } from 'fp-ts/lib/function';
 import { fold, mapLeft } from 'fp-ts/Either';
 
 type Validator = <A>(
   codec: t.Decoder<unknown, A>
-) => (value: unknown) => FutureInstance<ValidationErrorType, A>;
+) => (value: unknown) => FutureInstance<ValidationError, A>;
 
 export const validateHttpResponse: (url: string) => Validator = (url) => (codec) =>
   createValidator(codec, (errors) => ({
@@ -42,13 +42,13 @@ export function validateConfig<A>(codec: t.Decoder<unknown, A>, value: unknown):
 
 function createValidator<A>(
   codec: t.Decoder<unknown, A>,
-  mapError: (errors: t.Errors) => ValidationErrorType
-): (value: unknown) => FutureInstance<ValidationErrorType, A> {
+  mapError: (errors: t.Errors) => ValidationError
+): (value: unknown) => FutureInstance<ValidationError, A> {
   return (value: unknown) => {
     return pipe(
       codec.decode(value),
       mapLeft((err) => mapError(err)),
-      fold<ValidationErrorType, A, FutureInstance<ValidationErrorType, A>>(reject, resolve)
+      fold<ValidationError, A, FutureInstance<ValidationError, A>>(reject, resolve)
     );
   };
 }

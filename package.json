@@ -15,11 +15,17 @@
     "luxon": "^1.24.1",
     "module-alias": "^2.2.2",
     "point-of-view": "^4.3.0",
+    "sql-template-strings": "^2.2.2",
+    "sqlite": "^4.0.14",
+    "sqlite3": "^5.0.0",
     "tsc": "^1.20150623.0",
-    "typescript": "^3.9.7"
+    "typescript": "^3.9.7",
+    "uuid": "^8.3.0"
   },
   "devDependencies": {
     "@types/node": "^14.0.27",
+    "@types/sqlite3": "^3.1.6",
+    "@types/uuid": "^8.3.0",
     "@typescript-eslint/eslint-plugin": "^3.9.0",
     "@typescript-eslint/parser": "^3.9.0",
     "eslint": "^7.7.0",
@@ -28,7 +34,7 @@
     "prettier": "^2.0.5"
   },
   "scripts": {
-    "start": "npm run tsc && node --require ./hooks.js dist/main.js",
+    "start": "rm -rf dist/ && npm run tsc && node --require ./hooks.js dist/main.js",
     "test": "test",
     "tsc": "tsc -b",
     "format": "prettier --write '**/*.ts'",

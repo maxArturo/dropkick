@@ -1,11 +1,11 @@
 import axios, { AxiosRequestConfig } from 'axios';
 import { bimap, encaseP, FutureInstance } from 'fluture';
-import { ErrorType, HttpErrorType } from '@app/errors';
+import { ErrorType, HttpError } from '@app/errors';
 
-export const http = (config: AxiosRequestConfig): FutureInstance<HttpErrorType, unknown> => {
+export const http = (config: AxiosRequestConfig): FutureInstance<HttpError, unknown> => {
   return encaseP((params: AxiosRequestConfig) => axios(params))(config).pipe(
     bimap(
-      (err: unknown): HttpErrorType => ({
+      (err: unknown): HttpError => ({
         type: ErrorType.http,
         message: `An error occurred while fetching ${config.url}`,
         errorCode: 502,

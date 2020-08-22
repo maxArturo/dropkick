@@ -1,7 +1,7 @@
 import { FastifyInstance } from 'fastify';
 import { forkCatch } from 'fluture';
 import { Route, RouteType } from './types';
-import { AppErrorType } from '@app/errors';
+import { AppError } from '@app/errors';
 import { routes } from './routes';
 import { assertNever } from '@app/util/types';
 
@@ -22,7 +22,7 @@ function mapRoute<A>(route: Route<A>, app: FastifyInstance): void {
         app.log.error(e.message, { ...e });
         res.status(500).send('Internal server error, see logs for details');
       };
-      const handleReject = (err: AppErrorType) => res.status(err.errorCode).send({ ...err });
+      const handleReject = (err: AppError) => res.status(err.errorCode).send({ ...err });
 
       switch (route.routeType) {
         case RouteType.payload:

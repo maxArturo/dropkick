@@ -1,31 +1,30 @@
 import { Link } from '@app/domain';
-import { AppErrorType } from '@app/errors';
-import { FutureInstance, map, parallel } from 'fluture';
+import { AppError } from '@app/errors';
+import { chain, FutureInstance, map, parallel } from 'fluture';
 import { hackerNews } from '@app/services/links/linkProviders';
 import { pipe } from 'fp-ts/function';
 import { scheduleFuture } from '@app/services/schedule';
 import { appConfig } from '@app/config';
+import { dao } from '@app/adapters/dao/dao';
 
 type linkProvider = {
-  fetchLinks(): FutureInstance<AppErrorType, Array<Link>>;
+  fetchLinks(): FutureInstance<AppError, Array<Link>>;
 };
 
 const linkProviders: Array<linkProvider> = [hackerNews];
 
-export function fetchLinks(): FutureInstance<AppErrorType, Array<Link>> {
+export function fetchLinks(): FutureInstance<AppError, Array<Link>> {
   return pipe(
     parallel(2)(linkProviders.map((provider) => provider.fetchLinks())),
     map((res: Array<Array<Link>>) => res.flat())
   );
 }
 
-export function scheduleLinkExtraction() {
-  scheduleFuture(
+export function scheduleLinkExtraction(): void {
+  return scheduleFuture(
     pipe(
       fetchLinks(),
-      // TODO this will store the links in permanent storage in the future
-      // eslint-disable-next-line no-console
-      map((links) => console.log(links))
+      chain((links) => dao((repos) => repos.links.saveLinks(links)))
     ),
     appConfig.linkFetchInterval
   );
