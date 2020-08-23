@@ -1,12 +1,12 @@
 import * as t from 'io-ts';
 import { FutureInstance, reject, resolve } from 'fluture';
-import { ErrorType, ValidationError } from '@app/errors';
+import { AppError, ErrorType } from '@app/errors';
 import { pipe } from 'fp-ts/lib/function';
 import { fold, mapLeft } from 'fp-ts/Either';
 
 type Validator = <A>(
   codec: t.Decoder<unknown, A>
-) => (value: unknown) => FutureInstance<ValidationError, A>;
+) => (value: unknown) => FutureInstance<AppError, A>;
 
 export const validateHttpResponse: (url: string) => Validator = (url) => (codec) =>
   createValidator(codec, (errors) => ({
@@ -17,6 +17,17 @@ export const validateHttpResponse: (url: string) => Validator = (url) => (codec)
       errors: formatValidationErrors(errors),
     },
     errorCode: 502,
+  }));
+
+export const validateDbResult: (type: string) => Validator = (type) => (codec) =>
+  createValidator(codec, (errors) => ({
+    type: ErrorType.db,
+    message: 'Database result does not conform to domain model',
+    metadata: {
+      type,
+      errors: formatValidationErrors(errors),
+    },
+    errorCode: 500,
   }));
 
 export function validateConfig<A>(codec: t.Decoder<unknown, A>, value: unknown): A {
@@ -42,13 +53,13 @@ export function validateConfig<A>(codec: t.Decoder<unknown, A>, value: unknown):
 
 function createValidator<A>(
   codec: t.Decoder<unknown, A>,
-  mapError: (errors: t.Errors) => ValidationError
-): (value: unknown) => FutureInstance<ValidationError, A> {
+  mapError: (errors: t.Errors) => AppError
+): (value: unknown) => FutureInstance<AppError, A> {
   return (value: unknown) => {
     return pipe(
       codec.decode(value),
       mapLeft((err) => mapError(err)),
-      fold<ValidationError, A, FutureInstance<ValidationError, A>>(reject, resolve)
+      fold<AppError, A, FutureInstance<AppError, A>>(reject, resolve)
     );
   };
 }
