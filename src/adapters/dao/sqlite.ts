@@ -1,10 +1,22 @@
 import { appConfig } from '@app/config';
 import { AppError, ErrorType, fromNodeError } from '@app/errors/errors';
 import { noop } from '@app/util/functions';
-import Future, { bimap, encaseP, FutureInstance, hook } from 'fluture';
-import { pipe } from 'fp-ts/function';
+import Future, { bimap, encaseP, FutureInstance, hook, resolve } from 'fluture';
 import { Database, ISqlite, open } from 'sqlite';
 import sqlite3 from 'sqlite3';
+
+let db: DbClient;
+(async () => {
+  db = await open({
+    driver: sqlite3.Database,
+    filename: appConfig.databaseLocation,
+  }).then((dbInstance) => ({
+    run: operation(dbInstance.run.bind(dbInstance)),
+    get: operation(dbInstance.get.bind(dbInstance)),
+    all: operation(dbInstance.all.bind(dbInstance)),
+    client: dbInstance,
+  }));
+})();
 
 type DbOperation = (
   query: ISqlite.SqlType,
@@ -18,23 +30,6 @@ export type DbClient = {
   client: Database;
 };
 
-const connect = pipe(
-  encaseP((config: ISqlite.Config) => open(config).then((db) => db.migrate().then(() => db)))({
-    driver: sqlite3.Database,
-    filename: appConfig.databaseLocation,
-  }),
-  bimap(fromNodeError(ErrorType.db))(
-    (db): DbClient => {
-      return {
-        run: operation(db.run.bind(db)),
-        get: operation(db.get.bind(db)),
-        all: operation(db.all.bind(db)),
-        client: db,
-      };
-    }
-  )
-);
-
 const operation: (
   op: (query: ISqlite.SqlType, args?: Record<string, any>) => Promise<unknown>
 ) => (query: ISqlite.SqlType, args?: Record<string, any>) => FutureInstance<AppError, unknown> = (
@@ -47,9 +42,9 @@ const operation: (
     params: args,
   }).pipe(bimap(fromNodeError(ErrorType.db))((res) => res));
 
-export const withDb = hook(connect)((db) =>
-  Future((_rej, res) => {
-    db.client.close().then(() => res(void 0));
-    return noop;
-  })
-);
+const connect = Future<AppError, DbClient>((_rej, res) => {
+  res(db);
+  return noop;
+});
+
+export const withDb = hook(connect)(() => resolve(noop));
