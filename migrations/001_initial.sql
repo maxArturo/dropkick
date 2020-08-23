@@ -16,9 +16,8 @@ CREATE TABLE links
 CREATE TABLE link_text
 (
     id             TEXT PRIMARY KEY,
-    link_id        TEXT NOT NULL,
+    link_id        TEXT NOT NULL UNIQUE,
     link_text      TEXT NOT NULL,
-    comments_count TEXT NOT NULL,
     created_at     DATE NOT NULL,
     FOREIGN KEY (link_id) REFERENCES links(id)
 );

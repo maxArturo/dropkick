@@ -59,4 +59,19 @@ const getLatestLinks: (db: DbClient) => FutureInstance<AppError, Array<Link>> = 
   );
 };
 
-export const links = { saveLinks, getLatestLinks };
+const getLinksWithoutText: (db: DbClient) => FutureInstance<AppError, Array<Link>> = (db) => {
+  const query = sql`
+    SELECT links.* from links 
+        LEFT JOIN link_text lt on links.id = lt.link_id
+    where lt.id IS NULL 
+      `;
+
+  return pipe(
+    db.all(query),
+    chain(validateDbResult('validateArray')(t.array(t.record(t.string, t.unknown)))),
+    map((rows: Array<Record<string, unknown>>) => rows.map(camelCaseKeys)),
+    chain(validateDbResult('getLatestLinks')(t.array(linkCodec)))
+  );
+};
+
+export const links = { saveLinks, getLatestLinks, getLinksWithoutText };

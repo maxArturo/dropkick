@@ -6,6 +6,7 @@ import { pipe } from 'fp-ts/function';
 import { scheduleFuture } from '@app/services/schedule';
 import { appConfig } from '@app/config';
 import { dao } from '@app/adapters/dao/dao';
+import { fetchMissingLinkText } from '@app/services/linkText';
 
 type linkProvider = {
   fetchLinks(): FutureInstance<AppError, Array<Link>>;
@@ -24,7 +25,8 @@ export function scheduleLinkExtraction(): void {
   return scheduleFuture(
     pipe(
       fetchLinks(),
-      chain((links) => dao((repos) => repos.links.saveLinks(links)))
+      chain((links) => dao((repos) => repos.links.saveLinks(links))),
+      chain(() => fetchMissingLinkText())
     ),
     appConfig.linkFetchInterval
   );

@@ -1,11 +1,16 @@
-import { links } from './repositories/links';
+import { links, linkText } from '../repositories';
 import { DbClient, withDb } from '@app/adapters/dao/sqlite';
 import { FutureInstance } from 'fluture';
 import { AppError } from '@app/errors';
 
 const repositories = (db: DbClient) => {
   return {
-    links: { saveLinks: links.saveLinks(db), getLatestLinks: links.getLatestLinks(db) },
+    links: {
+      getLinksWithoutText: links.getLinksWithoutText(db),
+      saveLinks: links.saveLinks(db),
+      getLatestLinks: links.getLatestLinks(db),
+    },
+    linkText: { save: linkText.save(db), getLinkText: linkText.getLinkText(db) },
   };
 };
 
