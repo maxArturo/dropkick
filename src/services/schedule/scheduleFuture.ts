@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import { forkCatch, FutureInstance } from 'fluture';
+import { AppError } from '@app/errors';
 import { identity } from 'io-ts';
-import { AppErrorType } from '@app/errors';
 
 function schedule(func: any, interval: number): () => void {
   return () => {
@@ -10,7 +10,7 @@ function schedule(func: any, interval: number): () => void {
   };
 }
 
-export function scheduleFuture<E extends AppErrorType, A>(
+export function scheduleFuture<E extends AppError, A>(
   task: FutureInstance<E, A>,
   interval: number
 ): void {

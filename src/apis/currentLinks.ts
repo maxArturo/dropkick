@@ -1,8 +1,8 @@
 import { FutureInstance } from 'fluture';
-import { AppErrorType } from '@app/errors';
+import { AppError } from '@app/errors';
 import { Link } from '@app/domain';
-import { linksService } from '@app/services';
+import { dao } from '@app/adapters/dao/dao';
 
-export function currentLinks(): FutureInstance<AppErrorType, Array<Link>> {
-  return linksService.fetchLinks();
+export function currentLinks(): FutureInstance<AppError, Array<Link>> {
+  return dao((r) => r.links.getLatestLinks);
 }

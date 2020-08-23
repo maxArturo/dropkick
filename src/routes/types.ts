@@ -1,6 +1,6 @@
 import { FastifyReply, FastifyRequest, HTTPMethods } from 'fastify';
 import { FutureInstance } from 'fluture';
-import { AppErrorType } from '@app/errors';
+import { AppError } from '@app/errors';
 
 export enum RouteType {
   view = 'view',
@@ -18,6 +18,6 @@ type handlerParams = {
 export type Route<A> = {
   method: HTTPMethods;
   url: string;
-  handler: (params: handlerParams) => FutureInstance<AppErrorType, A>;
+  handler: (params: handlerParams) => FutureInstance<AppError, A>;
   routeType: RouteType;
 };
