@@ -9,7 +9,7 @@ CREATE TABLE links
     source         TEXT NOT NULL,
     url            TEXT NOT NULL UNIQUE,
     comments_url   TEXT NOT NULL,
-    comments_count TEXT NOT NULL,
+    comments_count INTEGER NOT NULL,
     created_at     DATE NOT NULL
 );
 
@@ -28,5 +28,6 @@ CREATE TABLE link_text
 -- Down
 --------------------------------------------------------------------------------
 
+DROP TABLE link_text;
 DROP TABLE links;
 

@@ -8,6 +8,7 @@ import { validateDbResult } from '@app/util';
 import { pipe } from 'fp-ts/lib/pipeable';
 import { linkCodec } from '@app/domain/link';
 import { camelCaseKeys } from '@app/util/functions';
+import { appConfig } from '@app/config';
 
 const saveLinks: (db: DbClient) => (links: Array<Link>) => FutureInstance<AppError, void> = (
   db
@@ -43,7 +44,11 @@ const saveLinks: (db: DbClient) => (links: Array<Link>) => FutureInstance<AppErr
 
 const getLatestLinks: (db: DbClient) => FutureInstance<AppError, Array<Link>> = (db) => {
   const query = sql`
-    SELECT id, title, source, url, comments_url, comments_count, created_at FROM links
+    WITH latestLinks as (
+        SELECT id, title, source, url, comments_url, comments_count, created_at,
+               ROW_NUMBER() OVER(PARTITION BY source ORDER BY created_at DESC) as row_num
+        FROM links
+    ) SELECT * from latestLinks where row_num <= ${appConfig.homeViewLinkCount}
       `;
 
   return pipe(

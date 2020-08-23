@@ -10,12 +10,14 @@ let db: DbClient;
   db = await open({
     driver: sqlite3.Database,
     filename: appConfig.databaseLocation,
-  }).then((dbInstance) => ({
-    run: operation(dbInstance.run.bind(dbInstance)),
-    get: operation(dbInstance.get.bind(dbInstance)),
-    all: operation(dbInstance.all.bind(dbInstance)),
-    client: dbInstance,
-  }));
+  })
+    .then((dbInstance) => dbInstance.migrate().then(() => dbInstance))
+    .then((dbInstance) => ({
+      run: operation(dbInstance.run.bind(dbInstance)),
+      get: operation(dbInstance.get.bind(dbInstance)),
+      all: operation(dbInstance.all.bind(dbInstance)),
+      client: dbInstance,
+    }));
 })();
 
 type DbOperation = (
