@@ -41,7 +41,7 @@
     "prettier": "^2.0.5"
   },
   "scripts": {
-    "start": "rm -rf dist/ && npm run tsc && node --require ./hooks.js dist/main.js",
+    "start": "npm run tsc -b && node --require ./hooks.js dist/main.js",
     "test": "test",
     "tsc": "tsc -b",
     "format": "prettier --write '**/*.ts'",
