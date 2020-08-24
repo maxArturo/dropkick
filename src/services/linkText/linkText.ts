@@ -3,7 +3,7 @@ import { v4 as uuid } from 'uuid';
 import { AppError } from '@app/errors';
 import { pipe } from 'fp-ts/lib/function';
 import { dao } from '@app/adapters/dao/dao';
-import { fetchPage } from '@app/adapters/browser';
+import { browser } from '@app/adapters';
 import { DateTime } from 'luxon';
 import { Link } from '@app/domain';
 
@@ -19,7 +19,7 @@ export function fetchMissingLinkText(): FutureInstance<AppError, void> {
 
 function fetchTextForLink(link: Link): FutureInstance<AppError, void> {
   return pipe(
-    fetchPage(link.url),
+    browser.fetchPage(link.url),
     chain((text) => {
       return dao((r) =>
         r.linkText.save({

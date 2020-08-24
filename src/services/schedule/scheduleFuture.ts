@@ -1,24 +1,26 @@
 /* eslint-disable no-console */
 import { forkCatch, FutureInstance } from 'fluture';
 import { AppError } from '@app/errors';
-import { identity } from 'io-ts';
-
-function schedule(func: any, interval: number): () => void {
-  return () => {
-    func();
-    setTimeout(schedule(func, interval), interval);
-  };
-}
+import { log } from '@app/util/log';
 
 export function scheduleFuture<E extends AppError, A>(
   task: FutureInstance<E, A>,
   interval: number
 ): void {
-  // TODO implement actual logging
-  const handleErr = (err: Error) =>
-    console.log(`schedule for future failed with err: ${err.message}`);
-  const handleReject = (err: E) => console.log('schedule for future failed', JSON.stringify(err));
+  const start = forkCatch(handleErr)(handleReject)(handleResolve);
 
-  const start = forkCatch(handleErr)(handleReject)(identity);
-  schedule(() => start(task), interval)();
+  function handleErr(err: Error) {
+    log.error(`schedule for future failed with err: ${err.message}`);
+    setTimeout(() => start(task), interval);
+  }
+  function handleReject(err: E) {
+    log.error('schedule for future failed', JSON.stringify(err));
+    setTimeout(() => start(task), interval);
+  }
+  function handleResolve() {
+    log.info('schedule for future succeeded');
+    setTimeout(() => start(task), interval);
+  }
+
+  start(task);
 }

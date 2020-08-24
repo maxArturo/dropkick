@@ -21,7 +21,7 @@ export function fetchLinks(): FutureInstance<AppError, Array<Link>> {
   );
 }
 
-export function scheduleLinkExtraction(): void {
+export function scheduleFetchLinks(): void {
   return scheduleFuture(
     pipe(
       fetchLinks(),

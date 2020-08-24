@@ -18,5 +18,5 @@ app.listen(3000, (err) => {
     throw err;
   }
 
-  linksService.scheduleLinkExtraction();
+  linksService.scheduleFetchLinks();
 });
