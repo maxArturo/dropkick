@@ -17,15 +17,20 @@ const save: (db: DbClient) => (linkText: LinkText) => FutureInstance<AppError, v
                             id 
                           , link_id
                           , link_text
+                          , retry_count
                           , created_at
                           )
         VALUES (
                   ${link.id}
                 , ${link.linkId}
                 , ${link.linkText}
+                , ${link.retryCount}
                 , ${link.createdAt}
                )
-               ON CONFLICT (link_id) DO NOTHING 
+               ON CONFLICT (link_id) DO UPDATE SET 
+               link_text = excluded.link_text,
+               retry_count = excluded.retry_count,
+               created_at = excluded.created_at
       `;
 
   return db.run(query).pipe(map(() => void 0));

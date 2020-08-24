@@ -7,6 +7,7 @@ import { scheduleFuture } from '@app/services/schedule';
 import { appConfig } from '@app/config';
 import { dao } from '@app/adapters/dao/dao';
 import { fetchMissingLinkText } from '@app/services/linkText';
+import { initializeTextEntriesForLinks } from '@app/services/linkText/linkText';
 
 type linkProvider = {
   fetchLinks(): FutureInstance<AppError, Array<Link>>;
@@ -25,7 +26,14 @@ export function scheduleFetchLinks(): void {
   return scheduleFuture(
     pipe(
       fetchLinks(),
-      chain((links) => dao((repos) => repos.links.saveLinks(links))),
+      chain((links) => {
+        return pipe(
+          dao((repos) => {
+            return pipe(repos.links.saveLinks(links));
+          }),
+          chain(() => initializeTextEntriesForLinks(links))
+        );
+      }),
       chain(() => fetchMissingLinkText())
     ),
     appConfig.linkFetchInterval

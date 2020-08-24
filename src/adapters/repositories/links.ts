@@ -9,6 +9,7 @@ import { pipe } from 'fp-ts/lib/pipeable';
 import { linkCodec } from '@app/domain/link';
 import { camelCaseKeys } from '@app/util/functions';
 import { appConfig } from '@app/config';
+import { LinkWithText, linkWithTextCodec } from '@app/domain/linkWithText';
 
 const saveLinks: (db: DbClient) => (links: Array<Link>) => FutureInstance<AppError, void> = (
   db
@@ -59,19 +60,23 @@ const getLatestLinks: (db: DbClient) => FutureInstance<AppError, Array<Link>> = 
   );
 };
 
-const getLinksWithoutText: (db: DbClient) => FutureInstance<AppError, Array<Link>> = (db) => {
+const getLinksWithMissingText: (db: DbClient) => FutureInstance<AppError, Array<LinkWithText>> = (
+  db
+) => {
   const query = sql`
-    SELECT links.* from links 
+    SELECT links.*, lt.link_text, lt.retry_count from links 
         LEFT JOIN link_text lt on links.id = lt.link_id
-    where lt.id IS NULL 
-      `;
+    where 
+        lt.id IS NULL OR
+        (lt.retry_count <= ${appConfig.linkTextFetchRetryCount} AND lt.link_text IS NULL) 
+  `;
 
   return pipe(
     db.all(query),
     chain(validateDbResult('validateArray')(t.array(t.record(t.string, t.unknown)))),
     map((rows: Array<Record<string, unknown>>) => rows.map(camelCaseKeys)),
-    chain(validateDbResult('getLatestLinks')(t.array(linkCodec)))
+    chain(validateDbResult('getLatestLinks')(t.array(linkWithTextCodec)))
   );
 };
 
-export const links = { saveLinks, getLatestLinks, getLinksWithoutText };
+export const links = { saveLinks, getLatestLinks, getLinksWithMissingText };
