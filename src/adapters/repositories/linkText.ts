@@ -1,17 +1,18 @@
-import * as t from 'io-ts';
-import { DbClient } from '@app/adapters/dao/sqlite';
+import { DbClient } from '@app/adapters/dao';
 import { LinkText } from '@app/domain';
-import { AppError } from '@app/errors/errors';
-import { chain, FutureInstance, map } from 'fluture';
-import sql from 'sql-template-strings';
-import { validateDbResult } from '@app/util';
-import { pipe } from 'fp-ts/lib/pipeable';
-import { camelCaseKeys } from '@app/util/functions';
 import { linkTextCodec } from '@app/domain/linkText';
+import { AppError } from '@app/errors/errors';
+import { validateDbResult } from '@app/util';
+import { camelCaseKeys } from '@app/util/functions';
+import { chain, FutureInstance, map } from 'fluture';
+import { pipe } from 'fp-ts/lib/pipeable';
+import { Reader } from 'fp-ts/lib/Reader';
+import * as t from 'io-ts';
+import sql from 'sql-template-strings';
 
-const save: (db: DbClient) => (linkText: LinkText) => FutureInstance<AppError, void> = (db) => (
+const save: (linkText: LinkText) => Reader<{ db: DbClient }, FutureInstance<AppError, void>> = (
   link
-) => {
+) => ({ db }) => {
   const query = sql`
         INSERT INTO link_text(
                             id 
@@ -36,9 +37,9 @@ const save: (db: DbClient) => (linkText: LinkText) => FutureInstance<AppError, v
   return db.run(query).pipe(map(() => void 0));
 };
 
-const getLinkText: (db: DbClient) => (linkId: string) => FutureInstance<AppError, LinkText> = (
-  db
-) => (linkId) => {
+const getLinkText: (
+  linkId: string
+) => Reader<{ db: DbClient }, FutureInstance<AppError, LinkText>> = (linkId) => ({ db }) => {
   const query = sql`
      SELECT * from link_text where link_id = ${linkId};
       `;

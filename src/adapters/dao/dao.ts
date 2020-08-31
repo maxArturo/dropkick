@@ -1,7 +1,8 @@
 import { links, linkText } from '../repositories';
-import { DbClient, withDb } from '@app/adapters/dao/sqlite';
+import { withDb } from '@app/adapters/dao/sqlite';
 import { FutureInstance } from 'fluture';
 import { AppError } from '@app/errors';
+import { DbClient } from './types';
 
 const repositories = (db: DbClient) => {
   return {

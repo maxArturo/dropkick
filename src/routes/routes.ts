@@ -6,6 +6,8 @@ import { apis } from '@app/apis';
 import { pipe } from 'fp-ts/function';
 import { renderer } from '@app/views';
 import { Link } from '@app/domain';
+import * as R from 'fp-ts/lib/Reader';
+import { db } from '@app/adapters/dao/sqlite';
 
 export const routes: Array<Route<unknown>> = [
   {
@@ -35,5 +37,13 @@ export const routes: Array<Route<unknown>> = [
             metadata: {},
             errorCode: 500,
           }),
+  },
+  {
+    routeType: RouteType.payload,
+    method: 'GET',
+    url: '/whops',
+    handler: (): FutureInstance<AppError, { message: string }> => {
+      type deps = { db: typeof db };
+    },
   },
 ];

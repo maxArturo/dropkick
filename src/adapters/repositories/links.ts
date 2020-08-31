@@ -1,19 +1,20 @@
-import * as t from 'io-ts';
-import { DbClient } from '@app/adapters/dao/sqlite';
-import { Link } from '@app/domain';
-import { AppError } from '@app/errors/errors';
-import { chain, FutureInstance, map, parallel } from 'fluture';
-import sql from 'sql-template-strings';
-import { validateDbResult } from '@app/util';
-import { pipe } from 'fp-ts/lib/pipeable';
-import { linkCodec } from '@app/domain/link';
-import { camelCaseKeys } from '@app/util/functions';
+import { DbClient } from '@app/adapters/dao';
 import { appConfig } from '@app/config';
+import { Link } from '@app/domain';
+import { linkCodec } from '@app/domain/link';
 import { LinkWithText, linkWithTextCodec } from '@app/domain/linkWithText';
+import { AppError } from '@app/errors/errors';
+import { validateDbResult } from '@app/util';
+import { camelCaseKeys } from '@app/util/functions';
+import { chain, FutureInstance, map, parallel } from 'fluture';
+import { pipe } from 'fp-ts/lib/pipeable';
+import { Reader } from 'fp-ts/lib/Reader';
+import * as t from 'io-ts';
+import sql from 'sql-template-strings';
 
-const saveLinks: (db: DbClient) => (links: Array<Link>) => FutureInstance<AppError, void> = (
-  db
-) => (linksToSave) => {
+const saveLinks: (
+  links: Array<Link>
+) => Reader<{ db: DbClient }, FutureInstance<AppError, void>> = (linksToSave) => ({ db }) => {
   const insertOperations = linksToSave.map((link) => {
     return db.run(
       sql`
@@ -43,7 +44,9 @@ const saveLinks: (db: DbClient) => (links: Array<Link>) => FutureInstance<AppErr
   return parallel(5)(insertOperations).pipe(map(() => void 0));
 };
 
-const getLatestLinks: (db: DbClient) => FutureInstance<AppError, Array<Link>> = (db) => {
+const getLatestLinks: Reader<{ db: DbClient }, FutureInstance<AppError, Array<Link>>> = ({
+  db,
+}) => {
   const query = sql`
     WITH latestLinks as (
         SELECT id, title, source, url, comments_url, comments_count, created_at,
@@ -60,9 +63,10 @@ const getLatestLinks: (db: DbClient) => FutureInstance<AppError, Array<Link>> = 
   );
 };
 
-const getLinksWithMissingText: (db: DbClient) => FutureInstance<AppError, Array<LinkWithText>> = (
-  db
-) => {
+const getLinksWithMissingText: Reader<
+  { db: DbClient },
+  FutureInstance<AppError, Array<LinkWithText>>
+> = ({ db }) => {
   const query = sql`
     SELECT links.*, lt.link_text, lt.retry_count from links 
         LEFT JOIN link_text lt on links.id = lt.link_id

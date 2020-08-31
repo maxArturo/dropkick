@@ -5,9 +5,10 @@ import { pipe } from 'fp-ts/lib/function';
 import { map, chain } from 'fluture';
 import { getReadableDom } from './readability';
 import { validateHttpResponse } from '@app/util';
+import { log } from '@app/util/log';
 
 export const httpContentFetcher: LinkContentFetcher = (url) => {
-  console.log(`Fetching: ${url} via http method`);
+  log.info(`Fetching: ${url} via http method`);
   return pipe(
     http({
       url,
@@ -15,7 +16,7 @@ export const httpContentFetcher: LinkContentFetcher = (url) => {
     }),
     chain(validateHttpResponse(url)(t.string)),
     map<string, string>((text) => {
-      console.log(`Fetching: ${url} completed`);
+      log.info(`Fetching: ${url} completed`);
       return getReadableDom(text, url);
     })
   );
