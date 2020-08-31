@@ -1,4 +1,5 @@
 import camelCase from 'camelcase';
+
 // eslint-disable-next-line @typescript-eslint/no-empty-function
 export function noop(): void {}
 
@@ -9,4 +10,8 @@ export function camelCaseKeys(input: Record<string, unknown>): Record<string, un
     result[camelizedKey] = input[key];
   });
   return result;
+}
+
+export function toInt(input: string): number {
+  return parseInt(input, 10);
 }
