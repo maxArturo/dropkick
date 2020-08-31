@@ -1,1 +1,1 @@
-export { fetchMissingLinkText } from './linkText';
+export * from './linkText';

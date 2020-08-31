@@ -1,1 +1,3 @@
-export { hackerNews } from './hackerNews';
+import { hackerNews } from './hackerNews';
+
+export const linkProviders = [hackerNews];

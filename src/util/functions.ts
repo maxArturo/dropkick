@@ -11,3 +11,7 @@ export function camelCaseKeys(input: Record<string, unknown>): Record<string, un
   });
   return result;
 }
+
+export function toInt(input: string): number {
+  return parseInt(input, 10);
+}
